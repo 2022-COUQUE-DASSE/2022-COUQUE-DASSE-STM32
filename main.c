@@ -1,5 +1,6 @@
 #include "main.h"
-/* Private includes ---------------------------------------------------------*/
+
+/* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdlib.h>
 #include <string.h>
@@ -12,14 +13,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LED 4
-uint8_t buf[LED*24+48]={
-		57,57,57,57,57,57,57,57,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,//Green
-		28,28,28,28,28,28,28,28,57,57,57,57,57,57,57,57,28,28,28,28,28,28,28,28,//Red
-		28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,57,57,57,57,57,57,57,57,//Blue
-		57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,57,//White
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-};
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -34,6 +27,25 @@ uint8_t buf[LED*24+48]={
  UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+#define LED 12
+#define Lo 25
+#define Hi 50
+uint8_t buf[LED*24+48]={
+		Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,// Green 0
+		Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,// Red 1
+		Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Lo,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,// Blue 2
+		Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,Hi,// White 3
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi, //4
+		Hi,Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi,
+		Lo,Lo,Lo,Lo,Lo,Hi,Lo,Lo,Hi,Hi,Hi,Lo,Hi,Hi,Hi,Hi,Lo,Lo,Lo,Hi,Lo,Hi,Lo,Hi, // 12
+		//0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -49,17 +61,19 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void convert_color(uint32_t color , uint16_t led_no)
+void convert_color(uint32_t color , uint16_t led_no) // led_no 넘버
 {
-	for (int i=0; i<12; i++)
+	for (int i=0; i<24; i++)
 	{
-		if ( color&(1<<(12-i)))
+//		buf[led_no*24+i] = 57;
+		if ( color&(1<<(23-i)))
 		{
-			buf[led_no*12+i] =57;
+			buf[led_no*24+i] =Hi;//50;
 		}
+
 		else
 		{
-			buf[led_no*12+i] = 28;
+			buf[led_no*24+i] =Lo;//25;
 		}
 	}
 }
@@ -81,7 +95,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -98,11 +111,11 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Stop_DMA(&htim3,TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start_DMA(&htim3,TIM_CHANNEL_1,(uint32_t*)buf,LED*12+48);
+  HAL_TIM_PWM_Start_DMA(&htim3,TIM_CHANNEL_1,(uint32_t*)buf,LED*24+48);
   while(hdma_tim3_ch1_trig.Instance->CNDTR>0);
   HAL_Delay(3000);
 
-  memset(buf,0,LED*12+48);
+  memset(buf,0,LED*24+48);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,13 +125,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  for (int i=0;i<4;i++)
+	  for (int i=0;i<12;i++)
 	  {
 		  convert_color(rand(),i);
 	  }
-	  HAL_TIM_PWM_Start_DMA(&htim3,TIM_CHANNEL_1,(uint32_t*)buf,LED*12+48);
+	  HAL_TIM_PWM_Start_DMA(&htim3,TIM_CHANNEL_1,(uint32_t*)buf,LED*24+48);
 	  while(hdma_tim3_ch1_trig.Instance->CNDTR>0);
-	  HAL_Delay(100);
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
