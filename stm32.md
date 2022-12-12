@@ -1,9 +1,3 @@
-# Yuuri-iot
-
-made by Yuuri-team
-
----
-
 ## 보드
 
 ---
