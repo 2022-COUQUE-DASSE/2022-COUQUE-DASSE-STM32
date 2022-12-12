@@ -12,12 +12,5 @@ ser1 = serial.Serial(
     dsrdtr=False
 )
 
-data = 1
- 
-while True:
-    
-    degree = input()
-    if degree.isdigit():
-        ser1.write(degree.encode())
-          
- 
+def send_String(degree):
+    ser1.write(degree.encode())
